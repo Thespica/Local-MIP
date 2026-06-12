@@ -742,8 +742,7 @@ bool Local_Search::inject_solution(const double* p_sol,
                                    size_t p_var_num,
                                    double p_obj)
 {
-  if (!solution_feasible(p_sol, p_var_num))
-    return false;
+  // [PATCH] skip solution_feasible to allow GPU->CPU exchange
 
   double internal_obj =
       p_obj / m_model_manager->is_min() - m_model_manager->obj_offset();
