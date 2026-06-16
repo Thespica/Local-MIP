@@ -27,9 +27,6 @@
 #include <utility>
 #include <vector>
 
-std::vector<size_t> Neighbor::m_bms_idxs;
-std::unordered_map<size_t, size_t> Neighbor::m_remap;
-
 Neighbor::Neighbor_Ctx::Neighbor_Ctx(const Readonly_Ctx& p_shared,
                                      std::vector<size_t>& p_op_var_idxs,
                                      std::vector<double>& p_op_var_deltas,

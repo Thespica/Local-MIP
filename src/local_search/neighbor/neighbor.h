@@ -89,10 +89,6 @@ private:
 
   size_t m_bms_op;
 
-  static std::vector<size_t> m_bms_idxs;
-
-  static std::unordered_map<size_t, size_t> m_remap;
-
   void explore_unsat_mtm_bm(Neighbor_Ctx& p_ctx);
 
   void explore_sat_mtm(Neighbor_Ctx& p_ctx);
@@ -161,31 +157,35 @@ Neighbor::sample_idxs(const std::vector<size_t>& p_source_idxs,
                       size_t& p_final_size,
                       Neighbor_Ctx& p_ctx)
 {
+  // Concurrent solver instances must not share these sampling buffers.
+  thread_local std::vector<size_t> bms_idxs;
+  thread_local std::unordered_map<size_t, size_t> remap;
+
   p_final_size = p_source_idxs.size();
   if (p_final_size <= p_max_sample)
     return p_source_idxs;
   p_final_size = p_max_sample;
-  m_bms_idxs.clear();
-  m_remap.clear();
+  bms_idxs.clear();
+  remap.clear();
   size_t available = p_source_idxs.size();
   for (size_t sample_idx = 0; sample_idx < p_max_sample; ++sample_idx)
   {
     std::uniform_int_distribution<size_t> dist(0, available - 1);
     size_t random_idx = dist(p_ctx.m_rng);
     size_t actual_idx = random_idx;
-    auto it = m_remap.find(random_idx);
-    if (it != m_remap.end())
+    auto it = remap.find(random_idx);
+    if (it != remap.end())
       actual_idx = it->second;
     size_t last_idx = available - 1;
     size_t mapped_last = last_idx;
-    auto last_it = m_remap.find(last_idx);
-    if (last_it != m_remap.end())
+    auto last_it = remap.find(last_idx);
+    if (last_it != remap.end())
       mapped_last = last_it->second;
-    m_remap[random_idx] = mapped_last;
-    m_bms_idxs.push_back(p_source_idxs[actual_idx]);
+    remap[random_idx] = mapped_last;
+    bms_idxs.push_back(p_source_idxs[actual_idx]);
     --available;
   }
-  return m_bms_idxs;
+  return bms_idxs;
 }
 
 inline bool
