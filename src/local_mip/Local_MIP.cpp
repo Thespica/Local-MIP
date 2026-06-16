@@ -66,6 +66,73 @@ void Local_MIP::set_model_file(const std::string& p_model_file)
   printf("c model file is set to : %s\n", m_model_file.c_str());
 }
 
+void Local_MIP::set_params_impl(const Paras& p_params, bool p_only_loaded)
+{
+  auto should_apply = [&](const char* p_name)
+  { return !p_only_loaded || p_params.has_loaded_param(p_name); };
+
+  if (should_apply("time_limit") && p_params.time_limit <= 0.0)
+    throw std::invalid_argument("time limit must be positive");
+
+  if (should_apply("model_file") && !p_params.model_file.empty())
+    set_model_file(p_params.model_file);
+  if (should_apply("sol_path") && !p_params.sol_path.empty())
+    set_sol_path(p_params.sol_path);
+  if (should_apply("time_limit"))
+    set_time_limit(p_params.time_limit);
+  if (should_apply("random_seed"))
+    set_random_seed(static_cast<uint32_t>(p_params.random_seed));
+  if (should_apply("feas_tolerance"))
+    set_feas_tolerance(p_params.feas_tolerance);
+  if (should_apply("opt_tolerance"))
+    set_opt_tolerance(p_params.opt_tolerance);
+  if (should_apply("zero_tolerance"))
+    set_zero_tolerance(p_params.zero_tolerance);
+  if (should_apply("bound_strengthen"))
+    set_bound_strengthen(p_params.bound_strengthen);
+  if (should_apply("log_obj"))
+    set_log_obj(p_params.log_obj != 0);
+  if (should_apply("restart_step"))
+    set_restart_step(static_cast<size_t>(p_params.restart_step));
+  if (should_apply("smooth_prob"))
+    set_weight_smooth_probability(
+        static_cast<size_t>(p_params.smooth_prob));
+  if (should_apply("bms_unsat_con"))
+    set_bms_unsat_con(static_cast<size_t>(p_params.bms_unsat_con));
+  if (should_apply("bms_unsat_ops"))
+    set_bms_mtm_unsat_op(static_cast<size_t>(p_params.bms_unsat_ops));
+  if (should_apply("bms_sat_con"))
+    set_bms_sat_con(static_cast<size_t>(p_params.bms_sat_con));
+  if (should_apply("bms_sat_ops"))
+    set_bms_mtm_sat_op(static_cast<size_t>(p_params.bms_sat_ops));
+  if (should_apply("bms_flip_ops"))
+    set_bms_flip_op(static_cast<size_t>(p_params.bms_flip_ops));
+  if (should_apply("bms_easy_ops"))
+    set_bms_easy_op(static_cast<size_t>(p_params.bms_easy_ops));
+  if (should_apply("bms_random_ops"))
+    set_bms_random_op(static_cast<size_t>(p_params.bms_random_ops));
+  if (should_apply("tabu_base"))
+    set_tabu_base(static_cast<size_t>(p_params.tabu_base));
+  if (should_apply("tabu_var"))
+    set_tabu_variation(static_cast<size_t>(p_params.tabu_var));
+  if (should_apply("activity_period"))
+    set_activity_period(static_cast<size_t>(p_params.activity_period));
+  if (should_apply("break_eq_feas"))
+    set_break_eq_feas(p_params.break_eq_feas != 0);
+  if (should_apply("split_eq"))
+    set_split_eq(p_params.split_eq != 0);
+  if (should_apply("start"))
+    set_start_method(p_params.start);
+  if (should_apply("restart"))
+    set_restart_method(p_params.restart);
+  if (should_apply("weight"))
+    set_weight_method(p_params.weight);
+  if (should_apply("lift_scoring"))
+    set_lift_scoring_method(p_params.lift_scoring);
+  if (should_apply("neighbor_scoring"))
+    set_neighbor_scoring_method(p_params.neighbor_scoring);
+}
+
 void Local_MIP::set_param_set_file(const std::string& p_param_set_file)
 {
   if (p_param_set_file.empty())
@@ -73,68 +140,13 @@ void Local_MIP::set_param_set_file(const std::string& p_param_set_file)
 
   Paras params;
   params.load_from_file(p_param_set_file, false);
-
-  if (params.has_loaded_param("time_limit") && params.time_limit <= 0.0)
-    throw std::invalid_argument("time limit must be positive");
-
-  if (params.has_loaded_param("model_file"))
-    set_model_file(params.model_file);
-  if (params.has_loaded_param("sol_path"))
-    set_sol_path(params.sol_path);
-  if (params.has_loaded_param("time_limit"))
-    set_time_limit(params.time_limit);
-  if (params.has_loaded_param("random_seed"))
-    set_random_seed(static_cast<uint32_t>(params.random_seed));
-  if (params.has_loaded_param("feas_tolerance"))
-    set_feas_tolerance(params.feas_tolerance);
-  if (params.has_loaded_param("opt_tolerance"))
-    set_opt_tolerance(params.opt_tolerance);
-  if (params.has_loaded_param("zero_tolerance"))
-    set_zero_tolerance(params.zero_tolerance);
-  if (params.has_loaded_param("bound_strengthen"))
-    set_bound_strengthen(params.bound_strengthen);
-  if (params.has_loaded_param("log_obj"))
-    set_log_obj(params.log_obj != 0);
-  if (params.has_loaded_param("restart_step"))
-    set_restart_step(static_cast<size_t>(params.restart_step));
-  if (params.has_loaded_param("smooth_prob"))
-    set_weight_smooth_probability(static_cast<size_t>(params.smooth_prob));
-  if (params.has_loaded_param("bms_unsat_con"))
-    set_bms_unsat_con(static_cast<size_t>(params.bms_unsat_con));
-  if (params.has_loaded_param("bms_unsat_ops"))
-    set_bms_mtm_unsat_op(static_cast<size_t>(params.bms_unsat_ops));
-  if (params.has_loaded_param("bms_sat_con"))
-    set_bms_sat_con(static_cast<size_t>(params.bms_sat_con));
-  if (params.has_loaded_param("bms_sat_ops"))
-    set_bms_mtm_sat_op(static_cast<size_t>(params.bms_sat_ops));
-  if (params.has_loaded_param("bms_flip_ops"))
-    set_bms_flip_op(static_cast<size_t>(params.bms_flip_ops));
-  if (params.has_loaded_param("bms_easy_ops"))
-    set_bms_easy_op(static_cast<size_t>(params.bms_easy_ops));
-  if (params.has_loaded_param("bms_random_ops"))
-    set_bms_random_op(static_cast<size_t>(params.bms_random_ops));
-  if (params.has_loaded_param("tabu_base"))
-    set_tabu_base(static_cast<size_t>(params.tabu_base));
-  if (params.has_loaded_param("tabu_var"))
-    set_tabu_variation(static_cast<size_t>(params.tabu_var));
-  if (params.has_loaded_param("activity_period"))
-    set_activity_period(static_cast<size_t>(params.activity_period));
-  if (params.has_loaded_param("break_eq_feas"))
-    set_break_eq_feas(params.break_eq_feas != 0);
-  if (params.has_loaded_param("split_eq"))
-    set_split_eq(params.split_eq != 0);
-  if (params.has_loaded_param("start"))
-    set_start_method(params.start);
-  if (params.has_loaded_param("restart"))
-    set_restart_method(params.restart);
-  if (params.has_loaded_param("weight"))
-    set_weight_method(params.weight);
-  if (params.has_loaded_param("lift_scoring"))
-    set_lift_scoring_method(params.lift_scoring);
-  if (params.has_loaded_param("neighbor_scoring"))
-    set_neighbor_scoring_method(params.neighbor_scoring);
-
+  set_params_impl(params, true);
   m_param_set_file = p_param_set_file;
+}
+
+void Local_MIP::set_params(const Paras& p_params)
+{
+  set_params_impl(p_params, false);
 }
 
 void Local_MIP::set_time_limit(double p_time_limit)
@@ -544,7 +556,8 @@ bool Local_MIP::inject_solution(const double* p_sol,
 }
 
 bool Local_MIP::inject_to_current_and_restart(
-    const double* p_sol, size_t p_var_num, size_t p_restart_step_override)
+    const double* p_sol, size_t p_var_num,
+    size_t p_restart_step_override)
 {
   return m_local_search->inject_to_current_and_restart(
       p_sol, p_var_num, p_restart_step_override);

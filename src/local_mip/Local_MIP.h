@@ -28,6 +28,8 @@
 #include <thread>
 #include <vector>
 
+struct Paras;
+
 class Local_MIP
 {
 private:
@@ -77,6 +79,8 @@ private:
 
   bool check_model_api() const;
 
+  void set_params_impl(const Paras& p_params, bool p_only_loaded);
+
 public:
   Local_MIP();
 
@@ -85,6 +89,8 @@ public:
   void set_model_file(const std::string& p_model_file);
 
   void set_param_set_file(const std::string& p_param_set_file);
+
+  void set_params(const Paras& p_params);
 
   void set_time_limit(double p_time_limit);
 
